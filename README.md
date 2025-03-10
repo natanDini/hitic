@@ -1,7 +1,7 @@
 # HITIc - Health Information Technology
 
 <p align="center">
-  <img src="/images/Medical_Robot_Logo.png" width="50%" style="border-radius: 50%;" />
+  <img src="/images/Medical_Robot_Logo.png" width="50%" />
 </p>
 
 ## Sobre o Projeto
