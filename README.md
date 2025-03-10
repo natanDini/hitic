@@ -1,4 +1,5 @@
-# HITIc - Health Information Technology
+<h1 align="center">HITIC</h1>
+<h2 align="center">Health Information Technology Iniciação Científica</h2>
 
 <p align="center">
   <img src="/images/Medical_Robot_Logo.png" width="50%" />
