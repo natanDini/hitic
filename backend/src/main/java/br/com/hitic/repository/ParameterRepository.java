@@ -8,4 +8,6 @@ import br.com.hitic.model.Parameter;
 @Repository
 public interface ParameterRepository extends JpaRepository<Parameter, Long> {
 	boolean existsByKey(String key);
+
+	String findByKey(String key);
 }
