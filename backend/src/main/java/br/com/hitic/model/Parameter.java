@@ -20,7 +20,7 @@ public class Parameter {
 	private Long id;
 
 	@Column(nullable = false, unique = true)
-	private String key;
+	private String paramKey;
 
 	@Column(nullable = false)
 	private String value;

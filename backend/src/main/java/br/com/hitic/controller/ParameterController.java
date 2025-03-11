@@ -2,6 +2,7 @@ package br.com.hitic.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -45,5 +46,11 @@ public class ParameterController {
 	public ResponseEntity<GeralResDTO> delete(@PathVariable Long parameterId) throws CustomException {
 		log.info(" >>> Tentando deletar um parameter na aplicação.");
 		return parameterServcie.delete(parameterId);
+	}
+
+	@GetMapping("/list")
+	public ResponseEntity<?> listarParametros() throws CustomException {
+		log.info(" >>> Tentando listar todos os parâmetros.");
+		return parameterServcie.list();
 	}
 }

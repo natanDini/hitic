@@ -17,7 +17,7 @@ public class ConversationUtils {
 
 	public Conversation findById(Long conversationId) throws CustomException {
 		return conversationRepository.findById(conversationId)
-				.orElseThrow(() -> new CustomException("Parameter informado não encontrado.", SeverityStatus.ERROR,
+				.orElseThrow(() -> new CustomException("Conversation informada não encontrada.", SeverityStatus.ERROR,
 						HttpStatus.NOT_FOUND));
 	}
 }
