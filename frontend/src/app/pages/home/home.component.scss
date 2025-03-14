@@ -1,0 +1,28 @@
+.home-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(to bottom, #011826, #0396A6);
+    margin: 0;
+    padding: 3%;
+}
+
+    .logo {
+        width: 440px;
+    }
+
+    .content-container {
+        color: white;
+        text-align: justify;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-evenly;
+    }
+
+    .button {
+        border-color: #011826;
+        background-color: #0388A6;
+        width: 20%;
+        height: 30px;
+    }
