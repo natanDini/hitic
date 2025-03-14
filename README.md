@@ -1,5 +1,3 @@
-# HITIC
-
 <h1 align="center">HITIC</h1>
 <h2 align="center">Health Information Technology Iniciação Científica</h2>
 
