@@ -14,20 +14,24 @@ import lombok.extern.slf4j.Slf4j;
 @Data
 @Slf4j
 @Entity
-@Table(name = "message")
-public class Message {
+@Table(name = "archive")
+public class Archive {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(columnDefinition = "TEXT")
-	private String questionMessage;
+	@Column
+	private String name;
 
-	@Column(columnDefinition = "TEXT")
-	private String answerMessage;
+	@Column(columnDefinition = "BYTEA")
+	private byte[] archiveBytes;
 
 	@ManyToOne
 	@JoinColumn(name = "conversation_id", referencedColumnName = "id", nullable = false)
 	private Conversation conversation;
+
+	@ManyToOne
+	@JoinColumn(name = "message_id", referencedColumnName = "id", nullable = false)
+	private Message message;
 }

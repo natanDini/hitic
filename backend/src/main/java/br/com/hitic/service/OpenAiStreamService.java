@@ -26,13 +26,13 @@ public class OpenAiStreamService {
 
 	private OpenAiService openAiService;
 
-	private final ParameterUtils aprameterUtils;
+	private final ParameterUtils parameterUtils;
 
 	private final MessageRepository messageRepository;
 
 	@PostConstruct
 	public void init() throws CustomException {
-		this.openAiService = new OpenAiService(aprameterUtils.findByParamKey("OPENAI_API").getValue());
+		this.openAiService = new OpenAiService(parameterUtils.findByParamKey("OPENAI_API").getValue());
 	}
 
 	public SseEmitter streamChatResponse(String userMessage, Message message) {
