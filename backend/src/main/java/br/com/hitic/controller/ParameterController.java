@@ -1,5 +1,7 @@
 package br.com.hitic.controller;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,8 +13,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.hitic.dto.request.ParameterReqDTO;
-import br.com.hitic.dto.response.GeralResDTO;
+import br.com.hitic.dto.response.GeneralResDTO;
 import br.com.hitic.exception.CustomException;
+import br.com.hitic.model.Parameter;
 import br.com.hitic.service.ParameterService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.Data;
@@ -28,14 +31,14 @@ public class ParameterController {
 
 	@Operation(summary = "Registrar Parameter")
 	@PostMapping("/register")
-	public ResponseEntity<GeralResDTO> register(@RequestBody ParameterReqDTO parameterReqDTO) throws CustomException {
+	public ResponseEntity<GeneralResDTO> register(@RequestBody ParameterReqDTO parameterReqDTO) throws CustomException {
 		log.info(" >>> Tentando registrar um parameter na aplicação.");
 		return parameterServcie.register(parameterReqDTO);
 	}
 
 	@Operation(summary = "Editar Parameter")
 	@PutMapping("/edit/{parameterId}")
-	public ResponseEntity<GeralResDTO> edit(@PathVariable Long parameterId,
+	public ResponseEntity<GeneralResDTO> edit(@PathVariable Long parameterId,
 			@RequestBody ParameterReqDTO parameterReqDTO) throws CustomException {
 		log.info(" >>> Tentando editar um parameter na aplicação.");
 		return parameterServcie.edit(parameterId, parameterReqDTO);
@@ -43,13 +46,13 @@ public class ParameterController {
 
 	@Operation(summary = "Deletar Parameter")
 	@DeleteMapping("/delete/{parameterId}")
-	public ResponseEntity<GeralResDTO> delete(@PathVariable Long parameterId) throws CustomException {
+	public ResponseEntity<GeneralResDTO> delete(@PathVariable Long parameterId) throws CustomException {
 		log.info(" >>> Tentando deletar um parameter na aplicação.");
 		return parameterServcie.delete(parameterId);
 	}
 
 	@GetMapping("/list")
-	public ResponseEntity<?> listarParametros() throws CustomException {
+	public ResponseEntity<List<Parameter>> listarParametros() throws CustomException {
 		log.info(" >>> Tentando listar todos os parâmetros.");
 		return parameterServcie.list();
 	}

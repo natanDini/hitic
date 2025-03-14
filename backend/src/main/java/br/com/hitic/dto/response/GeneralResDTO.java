@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class GeralResDTO {
+public class GeneralResDTO {
 	private String message;
 	private SeverityStatus severityStatus;
 }
