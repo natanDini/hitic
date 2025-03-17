@@ -51,6 +51,7 @@ public class ParameterController {
 		return parameterServcie.delete(parameterId);
 	}
 
+	@Operation(summary = "Listar todos os Parameters")
 	@GetMapping("/list")
 	public ResponseEntity<List<Parameter>> listarParametros() throws CustomException {
 		log.info(" >>> Tentando listar todos os parâmetros.");

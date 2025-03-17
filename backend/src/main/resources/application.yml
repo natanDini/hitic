@@ -21,4 +21,4 @@ spring:
 
 ocr:
   api:
-    url: https://api.ocr.space/parse/image
+    url: http://localhost:5000/ocr/upload
