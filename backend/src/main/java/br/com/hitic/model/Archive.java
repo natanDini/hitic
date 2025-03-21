@@ -24,14 +24,13 @@ public class Archive {
 	@Column
 	private String name;
 
+	@Column(columnDefinition = "TEXT")
+	private String content;
+
 	@Column(columnDefinition = "BYTEA")
 	private byte[] archiveBytes;
 
 	@ManyToOne
-	@JoinColumn(name = "conversation_id", referencedColumnName = "id", nullable = false)
-	private Conversation conversation;
-
-	@ManyToOne
-	@JoinColumn(name = "message_id", referencedColumnName = "id", nullable = false)
-	private Message message;
+	@JoinColumn(name = "operator_id", referencedColumnName = "id", nullable = false)
+	private Operator operator;
 }

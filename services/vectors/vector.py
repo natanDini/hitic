@@ -1,132 +1,164 @@
+import re
+import logging
 import psycopg2
 import numpy as np
+from flask import Flask, request, jsonify
 from sentence_transformers import SentenceTransformer
 
+# Configurar logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+
+app = Flask(__name__)
+
+# Configuração do banco
 DB_NAME = "vectordb"
 DB_USER = "postgres"
 DB_PASSWORD = "1234"
 DB_HOST = "localhost"
 DB_PORT = "5432"
 
-SIMILARITY_THRESHOLD = 0.5  # Reduzido para garantir que sempre haja resultado
+# Inicializar modelo de embeddings
+logging.info(" >>> Carregando modelo de embeddings...")
+model = SentenceTransformer("paraphrase-multilingual-mpnet-base-v2")
+logging.info(" >>> Modelo carregado com sucesso.")
 
-model = SentenceTransformer("multi-qa-MiniLM-L6-dot-v1")
-
-def connect_db():
+# Conectar ao banco
+def get_db_connection():
+    logging.info(" >>> Conectando ao banco de dados PostgreSQL...")
     return psycopg2.connect(
         dbname=DB_NAME, user=DB_USER, password=DB_PASSWORD, host=DB_HOST, port=DB_PORT
     )
 
-def create_table():
-    conn = connect_db()
+# Sanitização do nome da tabela
+def sanitize_table_name(name):
+    sanitized_name = re.sub(r"[^a-zA-Z0-9_]", "_", name)
+    logging.info(f" >>> Nome da tabela sanitizado: {sanitized_name.lower()}")
+    return sanitized_name.lower()
+
+# Criar tabela de embeddings
+def create_table(table_name):
+    conn = get_db_connection()
     cur = conn.cursor()
+    logging.info(f" >>> Criando tabela e índice para: {table_name}")
 
     cur.execute("CREATE EXTENSION IF NOT EXISTS vector;")
-    
-    cur.execute(
-        """
-        CREATE TABLE IF NOT EXISTS text_embeddings (
+    cur.execute(f"""
+        CREATE TABLE IF NOT EXISTS {table_name} (
             id SERIAL PRIMARY KEY,
-            text TEXT NOT NULL,
-            embedding vector(384)
+            content TEXT,
+            embedding VECTOR(768)
         );
-        """
-    )
-    
-    # Criar índice HNSW para melhor eficiência
-    cur.execute(
-        """
-        CREATE INDEX IF NOT EXISTS text_embeddings_embedding_idx
-        ON text_embeddings USING hnsw (embedding vector_cosine_ops);
-        """
-    )
-    
+    """)
+    cur.execute(f"""
+        CREATE INDEX IF NOT EXISTS idx_{table_name} ON {table_name} 
+        USING hnsw (embedding vector_l2_ops) 
+        WITH (m = 32, ef_construction = 300);
+    """)
     conn.commit()
     cur.close()
     conn.close()
+    logging.info(" >>> Tabela criada com sucesso.")
 
-def get_embedding(text):
-    return model.encode("Pergunta: " + text, convert_to_tensor=False).tolist()
+# Dividir texto em chunks
+def split_text(text, chunk_size=500):
+    logging.info(" >>> Dividindo texto em chunks...")
+    sentences = text.split('. ')
+    chunks = []
+    current = ""
+    for sentence in sentences:
+        if len(current) + len(sentence) < chunk_size:
+            current += sentence + ". "
+        else:
+            chunks.append(current.strip())
+            current = sentence + ". "
+    if current:
+        chunks.append(current.strip())
+    logging.info(" >>> Texto dividido com sucesso.")
+    return chunks
 
-def insert_text(text):
-    paragraphs = text.split("\n\n")  # Segmentar por parágrafos
-    conn = connect_db()
+# Inserir embeddings
+def insert_embeddings(table_name, text):
+    logging.info(f" >>> Iniciando inserção de embeddings na tabela: {table_name}")
+    create_table(table_name)
+    chunks = split_text(text)
+    embeddings = model.encode(chunks)
+
+    conn = get_db_connection()
     cur = conn.cursor()
 
-    for paragraph in paragraphs:
-        paragraph = paragraph.strip()
-        if len(paragraph) < 50:  # Evitar textos muito curtos
-            continue
-
-        embedding = get_embedding(paragraph)
+    for chunk, emb in zip(chunks, embeddings):
+        emb_list = emb.tolist()
         cur.execute(
-            "INSERT INTO text_embeddings (text, embedding) VALUES (%s, %s)",
-            (paragraph, embedding)
+            f"INSERT INTO {table_name} (content, embedding) VALUES (%s, %s)",
+            (chunk, emb_list)
         )
-    
+
     conn.commit()
     cur.close()
     conn.close()
+    logging.info(" >>> Inserção concluída com sucesso.")
+    return len(chunks)
 
-def search_similar(query_text, top_k=5, context_window=1):
-    query_embedding = get_embedding(query_text)
-    query_embedding_str = f"[{', '.join(map(str, query_embedding))}]"
+# Endpoint para inserir texto e criar uma nova tabela
+@app.route("/insert", methods=["POST"])
+def insert():
+    logging.info(" >>> Requisição recebida em /insert")
+    
+    data = request.json
+    text = data.get("text", "")
+    name = data.get("name", "")
 
-    conn = connect_db()
+    if not text or not name:
+        logging.warning(" >>> Campos 'text' e 'name' são obrigatórios.")
+        return jsonify({"error": "Campos 'text' e 'name' são obrigatórios"}), 400
+
+    table_name = sanitize_table_name(name)
+    insert_embeddings(table_name, text)
+
+    logging.info(f" >>> Inserção finalizada. Tabela '{table_name}' criada.")
+
+    return jsonify({"vectorReference": table_name})
+
+# Endpoint para buscar trechos relevantes (resposta em texto único)
+@app.route("/query", methods=["POST"])
+def query():
+    logging.info(" >>> Requisição recebida em /query")
+    
+    data = request.json
+    question = data.get("question", "")
+    table_name = data.get("vectorReference", "")
+
+    if not question or not table_name:
+        logging.warning(" >>> Campos 'question' e 'vectorReference' são obrigatórios.")
+        return jsonify({"error": "Campos 'question' e 'vectorReference' são obrigatórios"}), 400
+
+    table_name = sanitize_table_name(table_name)
+    logging.info(f" >>> Executando busca na tabela: {table_name}")
+    logging.info(f" >>> Pergunta recebida: {question}")
+
+    question_emb = model.encode([question])[0].tolist()
+    question_emb_str = f"ARRAY{question_emb}::vector"
+
+    conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute(
-        """
-        SELECT id, text, 1 - (embedding <=> %s::vector) AS similarity
-        FROM text_embeddings
-        ORDER BY embedding <=> %s::vector
-        LIMIT %s;
-        """,
-        (query_embedding_str, query_embedding_str, top_k)
-    )
+
+    cur.execute(f"""
+        SELECT content
+        FROM {table_name}
+        ORDER BY embedding <-> {question_emb_str}
+        LIMIT 5;
+    """)
     
     results = cur.fetchall()
     cur.close()
     conn.close()
 
-    if not results:
-        return [("Nenhum resultado exato encontrado, mas aqui estão os contextos mais próximos:", 0.0)]
-    
-    filtered_results = [(id, text, score) for id, text, score in results if score >= SIMILARITY_THRESHOLD]
-    
-    if not filtered_results:
-        filtered_results = results  # Se nada passar do threshold, usa qualquer resultado
-    
-    merged_results = []
-    used_ids = set()
+    combined_text = "\n".join([row[0] for row in results])
+    logging.info(" >>> Consulta finalizada com sucesso.")
 
-    for i, (text_id, text, score) in enumerate(filtered_results):
-        if text_id in used_ids:
-            continue
-        
-        context_texts = [text]
-        used_ids.add(text_id)
+    return jsonify({"content": combined_text})
 
-        for j in range(1, context_window + 1):
-            next_idx = i + j
-            if next_idx < len(filtered_results):
-                next_id, next_text, _ = filtered_results[next_idx]
-                if next_id not in used_ids:
-                    context_texts.append(next_text)
-                    used_ids.add(next_id)
-        
-        merged_results.append((" ".join(context_texts), score))
-
-    return merged_results
-
+# Rodar API
 if __name__ == "__main__":
-    create_table()
-    
-    query = "Caixeiro viajante"
-    results = search_similar(query)
-    
-    print("\n🔍 Resultados mais relevantes:")
-    if not results:
-        print("Nenhum resultado relevante encontrado.")
-    else:
-        for text, score in results:
-            print(f"{score:.4f} - {text}")
+    logging.info(" >>> Inicializando servidor Flask na porta 5001...")
+    app.run(host="0.0.0.0", port=5001, debug=True)

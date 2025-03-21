@@ -6,6 +6,7 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class SendMessageReqDTO {
-	private Long conversationId;
 	private String prompt;
+	private Long operatorId;
+	private Long conversationId;
 }

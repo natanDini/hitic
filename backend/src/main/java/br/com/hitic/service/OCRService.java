@@ -18,7 +18,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import br.com.hitic.enums.SeverityStatus;
 import br.com.hitic.exception.CustomException;
-import br.com.hitic.utils.ParameterUtils;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
@@ -29,8 +28,6 @@ public class OCRService {
 
 	@Value("${ocr.api.url}")
 	private String OCR_API_URL;
-
-	private final ParameterUtils parameterUtils;
 
 	private final ObjectMapper objectMapper;
 	private final RestTemplate restTemplate;

@@ -12,6 +12,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Data;
@@ -32,6 +34,10 @@ public class Conversation {
 
 	@Column
 	private LocalDateTime createdAt;
+
+	@ManyToOne
+	@JoinColumn(name = "operator_id", referencedColumnName = "id", nullable = false)
+	private Operator operator;
 
 	@JsonIgnore
 	@OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, orphanRemoval = true)
