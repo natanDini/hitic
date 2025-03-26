@@ -13,9 +13,6 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import br.com.hitic.enums.SeverityStatus;
 import br.com.hitic.exception.CustomException;
 import lombok.Data;
@@ -29,7 +26,6 @@ public class OCRService {
 	@Value("${ocr.api.url}")
 	private String OCR_API_URL;
 
-	private final ObjectMapper objectMapper;
 	private final RestTemplate restTemplate;
 
 	public String sendToOcr(MultipartFile file) throws CustomException {
@@ -46,11 +42,7 @@ public class OCRService {
 			ResponseEntity<String> response = restTemplate.exchange(OCR_API_URL, HttpMethod.POST, requestEntity,
 					String.class);
 
-			ObjectMapper objectMapper = new ObjectMapper();
-			JsonNode jsonNode = objectMapper.readTree(response.getBody());
-
-			log.info(" >>> Retornando requisição de OCR com sucesso.");
-			return jsonNode.get("text").asText();
+			return response.getBody();
 		} catch (Exception e) {
 			log.error("Erro Interno no serviço de OCR: " + e.getMessage());
 			throw new CustomException("Erro interno no serviço de OCR.", SeverityStatus.ERROR,

@@ -37,7 +37,7 @@ public class ArchiveService {
 
 			newArchive.setContent(content);
 			newArchive.setOperator(operator);
-			newArchive.setName(archive.getName());
+			newArchive.setName(archive.getOriginalFilename());
 			newArchive.setArchiveBytes(archive.getBytes());
 
 			archiveRepository.save(newArchive);

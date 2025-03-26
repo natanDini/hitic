@@ -59,9 +59,17 @@ def create_table(table_name):
     conn.close()
     logging.info(" >>> Tabela criada com sucesso.")
 
+# Sanitização do nome da tabela
+def clean_text(text):
+    text = text.replace("\n", " ")
+    text = re.sub(r"\s+", " ", text).strip()
+    return text
+
 # Dividir texto em chunks
-def split_text(text, chunk_size=500):
+def split_text(text, chunk_size=500, overlap=50):
     logging.info(" >>> Dividindo texto em chunks...")
+    text = clean_text(text)
+    
     sentences = text.split('. ')
     chunks = []
     current = ""
@@ -146,7 +154,7 @@ def query():
         SELECT content
         FROM {table_name}
         ORDER BY embedding <-> {question_emb_str}
-        LIMIT 5;
+        LIMIT 10;
     """)
     
     results = cur.fetchall()

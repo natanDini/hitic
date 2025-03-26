@@ -36,7 +36,7 @@ def upload_pdf():
         text = "\n".join([pytesseract.image_to_string(img, lang="por") for img in images])
         logging.info(" >>> OCR concluído com sucesso.")
 
-        return jsonify({"text": text})
+        return text
 
     except Exception as e:
         logging.error(f" >>> Erro ao processar o PDF: {e}", exc_info=True)
