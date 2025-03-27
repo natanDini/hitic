@@ -16,7 +16,8 @@
         <div class="sidebar conversations">
             <h3>Conversas</h3>
             <ul>
-                <li *ngFor="let conv of conversations">
+                <li *ngFor="let conv of conversations" [class.selected]="isConversationSelected(conv.id)"
+                    (click)="selectConversation(conv)">
                     <div class="conversation-title">{{ conv.name }}</div>
                     <div class="conversation-time">{{ conv.createdAt | date: 'HH:mm' }}</div>
                 </li>
@@ -31,8 +32,14 @@
         </div>
 
         <div class="chat-messages">
-            <div class="message user">Olá! Quais são os sintomas da gripe?</div>
-            <div class="message ai">Febre, dor de cabeça, tosse e dores musculares.</div>
+            <ng-container *ngFor="let message of messages">
+                <div class="message user">
+                    {{ message.questionMessage }}
+                </div>
+                <div class="message ai">
+                    <markdown [data]="message.answerMessage"></markdown>
+                </div>
+            </ng-container>
         </div>
 
         <div class="chat-input">
