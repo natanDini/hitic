@@ -28,8 +28,13 @@ export class ChatComponent implements OnInit {
   ngOnInit(): void {
     this.operatorService.getOperators().subscribe((data) => {
       this.operators = data;
+  
+      // Se houver operadores, seleciona o primeiro automaticamente
+      if (this.operators.length > 0) {
+        this.selectOperator(this.operators[0]);
+      }
     });
-  }
+  }  
 
   selectOperator(operator: Operator): void {
     this.selectedOperatorId = operator.id;

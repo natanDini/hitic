@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -47,5 +48,11 @@ public class OperatorController {
 			throws CustomException {
 		log.info(" >>> Tentativa de listar conversations com o operator de ID: {} .", operatorId);
 		return operatorServcie.listConversationByOperator(operatorId);
+	}
+
+	@DeleteMapping("/delete/{operatorId}")
+	public ResponseEntity<GeneralResDTO> delete(@PathVariable Long operatorId) throws CustomException {
+		log.info(" >>> Tentativa de deletar o operator de ID: {} .", operatorId);
+		return operatorServcie.delete(operatorId);
 	}
 }

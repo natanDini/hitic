@@ -171,5 +171,7 @@
   }
   
   .chat-input button:hover {
-    background-color: #388bfd;
+    background-image: linear-gradient(135deg, #00f0ff, #00ff88);
+    box-shadow: 0 0 15px #00f0ff, 0 0 30px #00ff88;
+    color: #011826;
   }

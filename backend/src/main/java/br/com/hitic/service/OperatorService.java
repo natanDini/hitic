@@ -106,6 +106,7 @@ public class OperatorService {
 		List<OperatorShortResDTO> operatorsListDTO = operatorsList.stream()
 				.map(opr -> new OperatorShortResDTO(opr.getId(), opr.getName())).collect(Collectors.toList());
 
+		log.info(" >>> Listando Operators com sucesso.");
 		return ResponseEntity.ok(operatorsListDTO);
 	}
 
@@ -123,6 +124,17 @@ public class OperatorService {
 				.map(cnv -> new ConversationShortResDTO(cnv.getId(), cnv.getName(), cnv.getCreatedAt()))
 				.collect(Collectors.toList());
 
+		log.info(" >>> Listando conversas de Operator Id: {} - com sucesso.", operatorId);
 		return ResponseEntity.ok(listConversationDTO);
+	}
+
+	public ResponseEntity<GeneralResDTO> delete(Long operatorId) throws CustomException {
+
+		Operator operator = operatorUtils.findById(operatorId);
+
+		operatorRepository.delete(operator);
+
+		log.info(" >>> Operator Id: {} - deletado com sucesso.", operatorId);
+		return responseUtils.successResponse("Operator deletado com sucesso!");
 	}
 }
