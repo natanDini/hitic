@@ -17,7 +17,7 @@ RUN npm run build --prod
 FROM nginx:latest
 
 # Copiar os arquivos construídos para o Nginx
-COPY --from=build /app/dist /usr/share/nginx/html
+COPY --from=build /app/dist/frontend/browser /usr/share/nginx/html
 
 # Expor a porta padrão do Nginx
 EXPOSE 80
