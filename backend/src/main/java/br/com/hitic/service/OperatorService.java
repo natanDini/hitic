@@ -44,7 +44,7 @@ public class OperatorService {
 
 	private final OperatorRepository operatorRepository;
 
-	@Transactional
+	@Transactional(rollbackFor = { Exception.class, RuntimeException.class })
 	public ResponseEntity<GeneralResDTO> create(String name, String description, String promptTemplate,
 			MultipartFile[] archives) throws CustomException, IOException {
 

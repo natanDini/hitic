@@ -10,6 +10,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -55,6 +56,7 @@ public class ConversationService {
 	private final MessageRepository messageRepository;
 	private final ConversationRepository conversationRepository;
 
+	@Transactional(rollbackFor = { Exception.class, RuntimeException.class })
 	public SseEmitter sendMessage(SendMessageReqDTO sendMessageReqDTO) throws CustomException {
 
 		log.info(" >>> Requisição de mensagem recebido: " + sendMessageReqDTO.toString());
