@@ -26,7 +26,7 @@ public class GeneralUtils {
 
 		if (list.isEmpty()) {
 			log.info(" >>> Lista está vazia: " + message);
-			throw new CustomException(message, SeverityStatus.WARN, HttpStatus.NOT_FOUND);
+			throw new CustomException(message, SeverityStatus.WARN, HttpStatus.NO_CONTENT);
 		}
 	}
 }

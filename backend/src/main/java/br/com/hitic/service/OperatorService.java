@@ -2,6 +2,8 @@ package br.com.hitic.service;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -16,12 +18,17 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import br.com.hitic.dto.request.OperatorInsertPayloadReqDTO;
+import br.com.hitic.dto.response.ConversationShortResDTO;
 import br.com.hitic.dto.response.GeneralResDTO;
 import br.com.hitic.dto.response.OperatorInsertResDTO;
+import br.com.hitic.dto.response.OperatorShortResDTO;
 import br.com.hitic.enums.SeverityStatus;
 import br.com.hitic.exception.CustomException;
+import br.com.hitic.model.Conversation;
 import br.com.hitic.model.Operator;
+import br.com.hitic.repository.ConversationRepository;
 import br.com.hitic.repository.OperatorRepository;
+import br.com.hitic.utils.GeneralUtils;
 import br.com.hitic.utils.OperatorUtils;
 import br.com.hitic.utils.ResponseUtils;
 import lombok.Data;
@@ -37,11 +44,13 @@ public class OperatorService {
 
 	private final RestTemplate restTemplate;
 
+	private final GeneralUtils generalUtils;
 	private final ResponseUtils responseUtils;
 	private final OperatorUtils operatorUtils;
 
 	private final ArchiveService archiveService;
 
+	private final ConversationRepository conversationRepository;
 	private final OperatorRepository operatorRepository;
 
 	@Transactional(rollbackFor = { Exception.class, RuntimeException.class })
@@ -86,5 +95,34 @@ public class OperatorService {
 
 		log.info(" >>> Operator criado com sucesso.");
 		return responseUtils.successResponse("Operator criado com sucesso!");
+	}
+
+	public ResponseEntity<List<OperatorShortResDTO>> list() throws CustomException {
+
+		List<Operator> operatorsList = operatorRepository.findAll();
+
+		generalUtils.emptyListVerifier(operatorsList, "Não foram encontrados operators cadastrados na aplicação.");
+
+		List<OperatorShortResDTO> operatorsListDTO = operatorsList.stream()
+				.map(opr -> new OperatorShortResDTO(opr.getId(), opr.getName())).collect(Collectors.toList());
+
+		return ResponseEntity.ok(operatorsListDTO);
+	}
+
+	public ResponseEntity<List<ConversationShortResDTO>> listConversationByOperator(Long operatorId)
+			throws CustomException {
+
+		Operator operator = operatorUtils.findById(operatorId);
+
+		List<Conversation> listConversations = conversationRepository.findByOperator(operator);
+
+		generalUtils.emptyListVerifier(listConversations,
+				"Não foram encontrados conversas cadastrados para esse operator.");
+
+		List<ConversationShortResDTO> listConversationDTO = listConversations.stream()
+				.map(cnv -> new ConversationShortResDTO(cnv.getId(), cnv.getName(), cnv.getCreatedAt()))
+				.collect(Collectors.toList());
+
+		return ResponseEntity.ok(listConversationDTO);
 	}
 }
