@@ -21,10 +21,10 @@ spring:
 
 ocr:
   api:
-    url: http://localhost:5000/ocr/upload
+    url: http://ocr_service:5000/ocr/upload
 
 vector:
   api:
     url:
-      insert: http://localhost:5001/insert
-      query: http://localhost:5001/query
+      insert: http://vector_service:5001/insert
+      query: http://vector_service:5001/query

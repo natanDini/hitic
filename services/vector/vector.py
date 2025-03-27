@@ -14,7 +14,7 @@ app = Flask(__name__)
 DB_NAME = "vectordb"
 DB_USER = "postgres"
 DB_PASSWORD = "1234"
-DB_HOST = "localhost"
+DB_HOST = "host.docker.internal"
 DB_PORT = "5432"
 
 # Inicializar modelo de embeddings

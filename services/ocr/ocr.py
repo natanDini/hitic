@@ -5,15 +5,15 @@ import logging
 
 app = Flask(__name__)
 
-pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
-
-POPPLER_PATH = r"C:\Users\Usuario\Downloads\poppler-24.08.0\Library\bin"
+# Configurar Tesseract e Poppler para uso no Docker
+pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"
+POPPLER_PATH = "/usr/bin"
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 @app.route('/ocr/upload', methods=['POST'])
 def upload_pdf():
-    logging.info(" >>> Nova requisição recebida em /upload_pdf")
+    logging.info(" >>> Nova requisição recebida em /ocr/upload")
 
     if 'file' not in request.files:
         logging.warning(" >>> Nenhum arquivo enviado na requisição.")
@@ -44,4 +44,4 @@ def upload_pdf():
 
 if __name__ == '__main__':
     logging.info(" >>> Servidor OCR iniciado!")
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)

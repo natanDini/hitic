@@ -1,0 +1,48 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: backend
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://host.docker.internal:5432/hitic
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=1234
+    restart: unless-stopped
+
+  vector-service:
+    build:
+      context: ./services/vector
+    container_name: vector_service
+    ports:
+      - "5001:5001"
+    environment:
+      - DB_NAME=vectordb
+      - DB_USER=postgres
+      - DB_PASSWORD=1234
+      - DB_HOST=host.docker.internal
+      - DB_PORT=5432
+    volumes:
+      - ./services/vector:/app
+    restart: unless-stopped
+
+  ocr-service:
+    build:
+      context: ./services/ocr
+    container_name: ocr_service
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./services/ocr:/app
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
