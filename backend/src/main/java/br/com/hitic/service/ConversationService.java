@@ -102,7 +102,7 @@ public class ConversationService {
 
 		Conversation conversation = new Conversation();
 
-		conversation.setName((name.length() < 50 ? name.concat("...") : name.substring(0, 50).concat("...")));
+		conversation.setName((name.length() < 30 ? name.concat("...") : name.substring(0, 30).concat("...")));
 		conversation.setCreatedAt(generalUtils.getLocalDateTime());
 		conversation.setOperator(operator);
 
