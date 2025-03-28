@@ -2,14 +2,64 @@
     <!-- Container das sidebars -->
     <div class="sidebars-wrapper">
         <!-- Operadores -->
+        <!-- Botão + ao lado do título -->
         <div class="sidebar operators">
-            <h3>Operadores</h3>
+            <div class="header">
+                <h3>Operadores</h3>
+                <button (click)="openCreateOperatorModal()">+</button>
+            </div>
             <ul>
                 <li *ngFor="let operator of operators" [class.selected]="isOperatorSelected(operator.id)"
                     (click)="selectOperator(operator)">
                     {{ operator.name }}
                 </li>
             </ul>
+        </div>
+
+        <!-- Modal -->
+        <div class="modal-overlay" *ngIf="showCreateOperatorModal">
+            <div class="modal">
+                <h2 *ngIf="!isCreatingOperator">Novo Operador</h2>
+
+                <!-- Formulário -->
+                <form *ngIf="!isCreatingOperator" [formGroup]="createOperatorForm" (ngSubmit)="submitCreateOperator()">
+                    <input placeholder="Nome:" formControlName="name" required />
+                    <textarea placeholder="Descrição:" formControlName="description"></textarea>
+                    <textarea placeholder="Prompt:" formControlName="promptTemplate"></textarea>
+
+                    <!-- Botão + customizado -->
+                    <div class="file-upload">
+                        <button type="button" class="add-file-btn" (click)="fileInput.click()">+</button>
+                        <input #fileInput type="file" multiple (change)="onFileChange($event)" hidden />
+                        <span>Adicionar Arquivos</span>
+                    </div>
+
+                    <!-- Lista de arquivos -->
+                    <ul class="file-list" *ngIf="selectedFiles.length > 0">
+                        <li *ngFor="let file of selectedFiles; let i = index">
+                            {{ file.name }}
+                            <button type="button" (click)="removeFile(i)">✖</button>
+                        </li>
+                    </ul>
+
+                    <!-- Botões -->
+                    <div class="buttons">
+                        <button type="submit" class="modal-btn" [disabled]="isCreatingOperator">
+                            {{ isCreatingOperator ? 'Salvando...' : 'Salvar' }}
+                        </button>
+                        <button type="button" class="modal-btn" (click)="closeCreateOperatorModal()"
+                            [disabled]="isCreatingOperator">
+                            Cancelar
+                        </button>
+                    </div>
+                </form>
+
+                <!-- LOADING -->
+                <div class="loading-overlay" *ngIf="isCreatingOperator">
+                    <div class="typing-indicator"><span>.</span><span>.</span><span>.</span></div>
+                    <p class="loading-text">Criando novo Operador, aguarde!</p>
+                </div>
+            </div>
         </div>
 
         <!-- Conversas -->
@@ -45,7 +95,7 @@
                 </div>
                 <div *ngIf="isSending && !message.answerMessage" class="typing-indicator">
                     <span>.</span><span>.</span><span>.</span>
-                  </div>                  
+                </div>
             </ng-container>
         </div>
 

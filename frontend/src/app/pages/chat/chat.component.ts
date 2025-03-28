@@ -7,6 +7,8 @@ import { Message } from '../../models/message.model';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SendMessageRequest } from '../../models/send-message-request.model';
+import { HttpClient } from '@angular/common/http';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 
 import { MarkdownModule } from 'ngx-markdown';
 
@@ -15,7 +17,7 @@ import { MarkdownModule } from 'ngx-markdown';
   selector: 'app-chat',
   templateUrl: './chat.component.html',
   styleUrl: './chat.component.scss',
-  imports: [CommonModule, FormsModule, DatePipe, MarkdownModule]
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, DatePipe, MarkdownModule]
 })
 export class ChatComponent implements OnInit {
   operators: Operator[] = [];
@@ -26,12 +28,23 @@ export class ChatComponent implements OnInit {
   isSending: boolean = false;
   chatActive: boolean = false;
 
+  createOperatorForm!: FormGroup;
+  showCreateOperatorModal: boolean = false;
+  isCreatingOperator: boolean = false;
+
   selectedOperatorId: string | null = null;
   selectedConversationId: number | null = null;
 
-  constructor(private operatorService: OperatorService) { }
+  constructor(private fb: FormBuilder, private operatorService: OperatorService, private http: HttpClient) { }
 
   ngOnInit(): void {
+    this.createOperatorForm = this.fb.group({
+      name: [''],
+      description: [''],
+      promptTemplate: [''],
+      archives: [[]]
+    });
+
     this.operatorService.getOperators().subscribe((data) => {
       this.operators = data;
 
@@ -122,15 +135,15 @@ export class ChatComponent implements OnInit {
       complete: () => {
         this.isSending = false;
         console.log('SSE encerrado.');
-      
+
         // Sempre recarrega a lista de conversas
         this.operatorService.getConversations(req.operatorId).subscribe((data) => {
           this.conversations = data;
-      
+
           // Se for conversa nova, pega a mais recente (data[0]), 
           // senão pega a mesma que o usuário está usando (req.conversationId).
           let conversationToUse;
-      
+
           if (req.conversationId === 0) {
             // Nova conversa --> assumimos que a mais recente é a primeira
             conversationToUse = data[0];
@@ -138,7 +151,7 @@ export class ChatComponent implements OnInit {
             // Conversa existente --> acha a conversa pelo ID
             conversationToUse = data.find(c => c.id === req.conversationId);
           }
-      
+
           if (conversationToUse) {
             this.selectedConversationId = conversationToUse.id;
             // Carrega a lista de mensagens novamente
@@ -147,6 +160,64 @@ export class ChatComponent implements OnInit {
             });
           }
         });
+      }
+    });
+  }
+
+  openCreateOperatorModal(): void {
+    this.showCreateOperatorModal = true;
+  }
+
+  selectedFiles: File[] = [];
+
+  onFileChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+  
+    if (input.files && input.files.length > 0) {
+      const files: File[] = Array.from(input.files);
+      this.selectedFiles.push(...files);
+      this.createOperatorForm.patchValue({ archives: this.selectedFiles });
+    }
+  }  
+
+  removeFile(index: number): void {
+    this.selectedFiles.splice(index, 1);
+    this.createOperatorForm.patchValue({ archives: this.selectedFiles });
+  }
+
+  closeCreateOperatorModal(): void {
+    if (!this.isCreatingOperator) {
+      this.showCreateOperatorModal = false;
+      this.createOperatorForm.reset();
+      this.selectedFiles = [];
+    }
+  }
+
+  submitCreateOperator(): void {
+    if (this.createOperatorForm.invalid) return;
+    this.isCreatingOperator = true;
+
+    const formData = new FormData();
+    formData.append('name', this.createOperatorForm.value.name);
+    formData.append('description', this.createOperatorForm.value.description);
+    formData.append('promptTemplate', this.createOperatorForm.value.promptTemplate);
+
+    for (const file of this.createOperatorForm.value.archives) {
+      formData.append('archives', file);
+    }
+
+    this.http.post('http://localhost:8080/hitic/api/operator/create', formData).subscribe({
+      next: () => {
+        this.isCreatingOperator = false;
+        this.showCreateOperatorModal = false;
+        this.createOperatorForm.reset();
+        this.selectedFiles = [];
+        this.operatorService.getOperators().subscribe((data) => {
+          this.operators = data;
+        });
+      },
+      error: () => {
+        this.isCreatingOperator = false;
       }
     });
   }
