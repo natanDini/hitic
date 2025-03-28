@@ -2,10 +2,12 @@ package br.com.hitic.service;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.theokanning.openai.completion.chat.ChatCompletionRequest;
 import com.theokanning.openai.completion.chat.ChatMessage;
 import com.theokanning.openai.completion.chat.ChatMessageRole;
@@ -51,7 +53,11 @@ public class OpenAiStreamService {
 							fullResponse.append(content);
 
 							try {
-								emitter.send(SseEmitter.event().data("{\"chunk\": \"" + content + "\"}"));
+								Map<String, String> chunk = Map.of("chunk", content);
+								String json = new ObjectMapper().writeValueAsString(chunk);
+
+								emitter.send(SseEmitter.event().name("message") // opcional, mas bom pra debug
+										.data(json));
 							} catch (IOException e) {
 								emitter.completeWithError(e);
 							}

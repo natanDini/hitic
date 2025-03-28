@@ -47,6 +47,8 @@ export class ChatComponent implements OnInit {
     this.selectedConversationId = null;
     this.messages = [];
 
+    this.startNewConversation()
+
     this.operatorService.getConversations(operator.id).subscribe((data) => {
       this.conversations = data;
     });

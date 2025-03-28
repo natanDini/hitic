@@ -35,80 +35,71 @@ export class OperatorService {
    * stream SSE. Para cada linha do formato "data: { ... }",
    * extrai o `chunk` e emite via Observer.
    */
+  // Exemplo de método no seu OperatorService (ou serviço equivalente)
   sendMessageSse(request: SendMessageRequest): Observable<string> {
     const url = 'http://localhost:8080/hitic/api/conversation/send-message';
   
     return new Observable<string>((observer) => {
+      const controller = new AbortController();
+  
       fetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(request)
+        body: JSON.stringify(request),
+        credentials: 'include',
+        headers: {
+          'Accept': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          'Connection': 'keep-alive',
+          'Content-Type': 'application/json',
+        },
+        signal: controller.signal
       })
         .then((response) => {
-          if (!response.ok || !response.body) {
-            observer.complete();
+          if (!response.body) {
+            observer.error(new Error('Este navegador não suporta leitura de stream na resposta.'));
             return;
           }
   
           const reader = response.body.getReader();
-          const decoder = new TextDecoder();
+          const decoder = new TextDecoder('utf-8');
           let buffer = '';
   
-          function readChunk() {
-            reader
-              .read()
-              .then(({ value, done }) => {
-                if (done) {
-                  // Se o servidor fechou a conexão, encerramos
-                  observer.complete();
-                  return;
-                }
+          const readChunk = () => {
+            reader.read().then(({ done, value }) => {
+              if (done) {
+                observer.complete();
+                return;
+              }
   
-                // Decodifica o pedaço recém-lido
-                buffer += decoder.decode(value, { stream: true });
+              buffer += decoder.decode(value, { stream: true });
   
-                /**
-                 * Quebramos em linhas por '\n' e tratamos cada "data: ...".
-                 * Se o backend mandar SSE no formato tradicional (uma linha "data: {...}" e depois '\n\n'),
-                 * pode ser que você precise usar .split('\n\n') ou manipular de outro jeito.
-                 * Mas se o back tá mandando só `\n`, fique com .split('\n') normal.
-                 */
-                const lines = buffer.split('\n');
-                // O que sobrou (última linha) pode estar incompleta e fica em buffer
-                buffer = lines.pop() || '';
+              const events = buffer.split('\n\n');
+              buffer = events.pop() || ''; // mantém o resto para próxima leitura
   
-                // Agora processamos cada linha completa
-                for (const line of lines) {
-                  // Checa se a linha começa com "data:"
-                  if (line.startsWith('data:')) {
-                    // Pega só a parte JSON (sem 'data:')
-                    const jsonStr = line.substring('data:'.length).trim();
-  
-                    try {
-                      // Faz o parse do JSON
-                      const parsed = JSON.parse(jsonStr);
-                      // Se o backend tá mandando {"chunk": "...texto aqui..."}
-                      if (parsed && parsed.chunk) {
-                        // Emite esse pedaço pro .subscribe() lá em quem chamou
-                        observer.next(parsed.chunk);
-                      }
-                    } catch (err) {
-                      // Se der erro no parse, ignora ou loga
-                      console.error('JSON inválido:', err);
+              for (const event of events) {
+                const dataLine = event.split('\n').find(line => line.startsWith('data:'));
+                if (dataLine) {
+                  const jsonStr = dataLine.replace('data:', '').trim();
+                  try {
+                    const parsed = JSON.parse(jsonStr);
+                    if (parsed.chunk !== undefined) {
+                      observer.next(parsed.chunk);
                     }
+                  } catch (e) {
+                    console.warn('Erro parseando chunk:', jsonStr, e);
                   }
                 }
+              }
   
-                // Continua lendo até acabar
-                readChunk();
-              })
-              .catch((err) => observer.error(err));
-          }
+              readChunk();
+            }).catch((err) => observer.error(err));
+          };
   
-          // Inicia a leitura
           readChunk();
         })
         .catch((err) => observer.error(err));
+  
+      return () => controller.abort();
     });
-  } 
+  }  
 }
