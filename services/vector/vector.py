@@ -166,6 +166,34 @@ def query():
 
     return jsonify({"content": combined_text})
 
+# Endpoint para deletar a tabela especificada em "vectorReference"
+@app.route("/delete", methods=["POST"])
+def delete():
+    logging.info(" >>> Requisição recebida em /delete")
+    
+    data = request.json
+    table_name = data.get("vectorReference", "")
+
+    if not table_name:
+        logging.warning(" >>> Campo 'vectorReference' é obrigatório.")
+        return jsonify({"error": "Campo 'vectorReference' é obrigatório"}), 200
+
+    table_name = sanitize_table_name(table_name)
+
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        logging.info(f" >>> Deletando tabela: {table_name}")
+        cur.execute(f"DROP TABLE IF EXISTS {table_name};")
+        conn.commit()
+        cur.close()
+        conn.close()
+        logging.info(f" >>> Tabela '{table_name}' deletada com sucesso.")
+        return jsonify({"message": f"Tabela '{table_name}' deletada com sucesso."}), 200
+    except Exception as e:
+        logging.error(f" >>> Erro ao deletar tabela: {e}")
+        return jsonify({"error": "Erro ao deletar a tabela."}), 500
+
 # Rodar API
 if __name__ == "__main__":
     logging.info(" >>> Inicializando servidor Flask na porta 5001...")

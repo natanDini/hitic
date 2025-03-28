@@ -28,3 +28,4 @@ vector:
     url:
       insert: http://vector_service:5001/insert
       query: http://vector_service:5001/query
+      delete: http://vector_service:5001/delete

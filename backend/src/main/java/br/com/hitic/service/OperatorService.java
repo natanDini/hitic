@@ -18,6 +18,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import br.com.hitic.dto.request.OperatorInsertPayloadReqDTO;
+import br.com.hitic.dto.request.VectorReferenceDeletePayloadReqDTO;
 import br.com.hitic.dto.response.ConversationShortResDTO;
 import br.com.hitic.dto.response.GeneralResDTO;
 import br.com.hitic.dto.response.OperatorInsertResDTO;
@@ -41,6 +42,9 @@ public class OperatorService {
 
 	@Value("${vector.api.url.insert}")
 	private String VECTOR_API_URL_INSERT;
+
+	@Value("${vector.api.url.delete}")
+	private String VECTOR_API_URL_DELETE;
 
 	private final RestTemplate restTemplate;
 
@@ -129,9 +133,27 @@ public class OperatorService {
 		return ResponseEntity.ok(listConversationDTO);
 	}
 
+	@Transactional(rollbackFor = { Exception.class, RuntimeException.class })
 	public ResponseEntity<GeneralResDTO> delete(Long operatorId) throws CustomException {
 
 		Operator operator = operatorUtils.findById(operatorId);
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+
+		VectorReferenceDeletePayloadReqDTO payload = new VectorReferenceDeletePayloadReqDTO();
+
+		payload.setVectorReference(operator.getVectorReference());
+
+		HttpEntity<VectorReferenceDeletePayloadReqDTO> requestEntity = new HttpEntity<>(payload, headers);
+
+		ResponseEntity<Object> response = restTemplate.exchange(VECTOR_API_URL_DELETE, HttpMethod.POST, requestEntity,
+				Object.class);
+
+		if (!response.getStatusCode().is2xxSuccessful()) {
+			log.info(" >>> Erro ao deletar referência vetorial.");
+			throw new CustomException("Erro ao deletar referência vetorial.", SeverityStatus.ERROR, null);
+		}
 
 		operatorRepository.delete(operator);
 
