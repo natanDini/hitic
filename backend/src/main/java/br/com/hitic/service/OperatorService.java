@@ -115,7 +115,8 @@ public class OperatorService {
 
 		Operator operator = operatorUtils.findById(operatorId);
 
-		List<Conversation> listConversations = conversationRepository.findByOperator(operator);
+		List<Conversation> listConversations = conversationRepository
+				.findConversationsByOperatorOrderByLastMessageDesc(operator.getId());
 
 		generalUtils.emptyListVerifier(listConversations,
 				"Não foram encontrados conversas cadastrados para esse operator.");

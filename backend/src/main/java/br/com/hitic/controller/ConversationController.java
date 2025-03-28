@@ -2,6 +2,7 @@ package br.com.hitic.controller;
 
 import java.util.List;
 
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,7 +29,7 @@ public class ConversationController {
 
 	private final ConversationService conversationService;
 
-	@PostMapping("/send-message")
+	@PostMapping(value = "/send-message", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
 	public SseEmitter sendMessage(@RequestBody SendMessageReqDTO sendMessageReqDTO) throws CustomException {
 		log.info(" >>> Tentativa de envio de nova mensagem");
 		return conversationService.sendMessage(sendMessageReqDTO);

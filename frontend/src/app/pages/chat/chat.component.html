@@ -14,7 +14,10 @@
 
         <!-- Conversas -->
         <div class="sidebar conversations">
-            <h3>Conversas</h3>
+            <div class="conversations-header">
+                <h3>Conversas</h3>
+                <button class="add-button" (click)="startNewConversation()">+</button>
+            </div>
             <ul>
                 <li *ngFor="let conv of conversations" [class.selected]="isConversationSelected(conv.id)"
                     (click)="selectConversation(conv)">
@@ -31,20 +34,34 @@
             <h2>HealthChat</h2>
         </div>
 
-        <div class="chat-messages">
+        <!-- Chat ativo (mensagens sendo exibidas) -->
+        <div class="chat-messages" *ngIf="chatActive && messages.length > 0">
             <ng-container *ngFor="let message of messages">
                 <div class="message user">
                     {{ message.questionMessage }}
                 </div>
                 <div class="message ai">
-                    <markdown [data]="message.answerMessage"></markdown>
+                    <markdown [data]="message.answerMessage" [lineNumbers]="false"></markdown>
                 </div>
+                <div *ngIf="isSending && !message.answerMessage" class="typing-indicator">
+                    <span>.</span><span>.</span><span>.</span>
+                  </div>                  
             </ng-container>
         </div>
 
+        <!-- Tela de boas-vindas -->
+        <div class="chat-welcome" *ngIf="!chatActive">
+            <img src="../../../assets/Medical_Robot_Logo.png" alt="Logo" />
+            <p>HealthChat — Cuidando da sua saúde, conversa após conversa.</p>
+        </div>
+
         <div class="chat-input">
-            <input type="text" placeholder="Digite sua mensagem..." />
-            <button>Enviar</button>
+            <input type="text" placeholder="Digite sua mensagem..." [(ngModel)]="prompt" [disabled]="isSending"
+                (keydown.enter)="sendMessage()" />
+
+            <button (click)="sendMessage()" [disabled]="isSending">
+                {{ isSending ? 'Enviando...' : 'Enviar' }}
+            </button>
         </div>
     </div>
 </div>

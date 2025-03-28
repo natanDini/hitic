@@ -51,7 +51,7 @@ public class OpenAiStreamService {
 							fullResponse.append(content);
 
 							try {
-								emitter.send(SseEmitter.event().data(content));
+								emitter.send(SseEmitter.event().data("{\"chunk\": \"" + content + "\"}"));
 							} catch (IOException e) {
 								emitter.completeWithError(e);
 							}

@@ -1,5 +1,7 @@
 package br.com.hitic.model;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -26,6 +28,9 @@ public class Message {
 
 	@Column(columnDefinition = "TEXT")
 	private String answerMessage;
+	
+	@Column
+	private LocalDateTime createdAt;
 
 	@ManyToOne
 	@JoinColumn(name = "conversation_id", referencedColumnName = "id", nullable = false)

@@ -72,6 +72,7 @@ public class ConversationService {
 
 		message.setQuestionMessage(sendMessageReqDTO.getPrompt());
 		message.setConversation(conversation);
+		message.setCreatedAt(generalUtils.getLocalDateTime());
 
 		messageRepository.save(message);
 
