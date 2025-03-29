@@ -21,6 +21,8 @@ export class AttendanceComponent implements OnInit {
   recognitionError: string | null = null;
   isLoading = false;
 
+  videoStream: MediaStream | null = null;
+
   newPatient = {
     name: '',
     cpf: '',
@@ -59,10 +61,18 @@ export class AttendanceComponent implements OnInit {
     navigator.mediaDevices.getUserMedia({ video: true })
       .then(stream => {
         this.video.nativeElement.srcObject = stream;
+        this.videoStream = stream;
       })
       .catch(err => {
         console.error("Erro ao acessar a câmera:", err);
       });
+  }
+
+  ngOnDestroy() {
+    if (this.videoStream) {
+      this.videoStream.getTracks().forEach(track => track.stop());
+      this.videoStream = null;
+    }
   }
 
   registerPatient() {
