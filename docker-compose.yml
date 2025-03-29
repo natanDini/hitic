@@ -36,6 +36,22 @@ services:
     volumes:
       - ./services/ocr:/app
     restart: unless-stopped
+    
+  attendance_checker:
+    build:
+      context: ./services/attendance_checker
+    container_name: attendance_checker
+    environment:
+      - DB_NAME=hitic 
+      - DB_USER=postgres
+      - DB_PASSWORD=1234
+      - DB_HOST=host.docker.internal
+      - DB_PORT=5432
+    ports:
+      - "5002:5002"
+    volumes:
+      - ./services/attendance_checker/images:/app/images
+    restart: unless-stopped
 
   frontend:
     build:
