@@ -50,7 +50,7 @@ services:
     ports:
       - "5002:5002"
     volumes:
-      - ./services/attendance_checker/images:/app/images
+      - ./services/attendance_checker:/app
     restart: unless-stopped
 
   frontend:

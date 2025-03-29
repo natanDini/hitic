@@ -126,14 +126,14 @@ def recognize_face():
 
     if not file:
         logging.info("Nenhum arquivo foi enviado na requisição.")
-        return jsonify({"detail": "Arquivo não encontrado na requisição."}), 400
+        return jsonify({"message": "Arquivo não encontrado na requisição.", "severity": "error"}), 400
 
     try:
         image_bytes = file.read()
         logging.info("Imagem lida com sucesso a partir do arquivo enviado.")
     except Exception as e:
         logging.info(f"Erro ao ler o arquivo: {str(e)}")
-        return jsonify({"detail": "Erro ao ler o arquivo."}), 400
+        return jsonify({"message": "Erro ao ler o arquivo.", "severity": "error"}), 400
 
     # Converte bytes para array numpy
     np_arr = np.frombuffer(image_bytes, np.uint8)
@@ -141,7 +141,7 @@ def recognize_face():
 
     if frame is None:
         logging.info("Não foi possível decodificar a imagem. Verifique o formato enviado.")
-        return jsonify({"detail": "Não foi possível decodificar a imagem."}), 400
+        return jsonify({"message": "Não foi possível decodificar a imagem.", "severity": "error"}), 400
 
     # Converte BGR -> RGB
     rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -153,7 +153,7 @@ def recognize_face():
 
     if len(face_encodings) == 0:
         logging.info("Nenhum rosto foi detectado na imagem.")
-        return jsonify({"message": "Nenhum rosto detectado."}), 200
+        return jsonify({"message": "Nenhum rosto detectado.", "severity": "error"}), 200
 
     resultados = []
     conn = get_db_connection()
@@ -182,7 +182,7 @@ def recognize_face():
 
     conn.close()
     logging.info("Reconhecimento facial finalizado. Retornando resultados.")
-    return jsonify({"resultados": resultados}), 200
+    return jsonify({"message": "\n".join(resultados), "severity": "info"}), 200
 
 # --------------------------------------------------------------
 # Se quiser rodar diretamente este arquivo:
