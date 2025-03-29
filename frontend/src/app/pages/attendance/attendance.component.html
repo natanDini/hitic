@@ -1,5 +1,90 @@
-<h2>Attendance Checker</h2>
-<div>
-    <video #video width="320" height="240" autoplay></video>
-    <button (click)="captureFrame()">Capturar e Enviar</button>
-</div>  
+<div class="attendance-page">
+    <!-- Coluna 1: Câmera + botão -->
+    <div class="left-panel">
+        <div class="video-wrapper">
+            <h2>Attendance Checker</h2>
+            <video #video autoplay></video>
+        </div>
+
+        <div class="button-wrapper">
+            <button class="presence-button" [disabled]="isLoading" (click)="captureFrame()">
+                <ng-container *ngIf="!isLoading">Confirmar Presença</ng-container>
+                <ng-container *ngIf="isLoading">
+                    <span class="spinner"></span> Processando...
+                </ng-container>
+            </button>
+
+            <!-- Mensagem de erro -->
+            <div *ngIf="recognitionError" class="error-message">
+                {{ recognitionError }}
+            </div>
+
+            <!-- Informações do paciente reconhecido -->
+            <div *ngIf="recognizedPatient" class="recognized-info">
+                <div class="patient-text">
+                    <p><strong>Nome:</strong> {{ recognizedPatient.name }}</p>
+                    <p><strong>CPF:</strong> {{ recognizedPatient.cpf }}</p>
+                    <p><strong>Data de Nascimento:</strong> {{ recognizedPatient.birthDate }}</p>
+                    <p><strong>Status:</strong> {{ recognizedPatient.patientStatus }}</p>
+                </div>
+                <img *ngIf="recognizedPatient.patientPicture" [src]="recognizedPatient.patientPicture"
+                    alt="Foto do paciente" class="patient-photo" />
+            </div>
+        </div>
+    </div>
+
+    <!-- Coluna 2 (agora o antigo right-panel): Presentes e Ausentes -->
+    <div class="center-panel">
+        <div class="top-section">
+            <div class="list-section">
+                <h3>Presentes</h3>
+                <ul>
+                    <li *ngFor="let p of presentes">{{ p.name }} - {{ p.cpf }}</li>
+                </ul>
+            </div>
+        </div>
+        <div class="bottom-section">
+            <div class="list-section">
+                <div class="header-row">
+                    <h3>Ausentes</h3>
+                    <button class="presence-button reload-button" (click)="switchAbsent()" title="Atualizar ausentes">
+                        ↻
+                    </button>
+                </div>
+                <ul>
+                    <li *ngFor="let a of ausentes">{{ a.name }} - {{ a.cpf }}</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Coluna 3 (agora o antigo center-panel): Formulário -->
+    <div class="right-panel">
+        <form class="patient-form" (ngSubmit)="registerPatient()" #patientForm="ngForm">
+            <h3>Cadastrar Novo Paciente</h3>
+
+            <label>
+                <span>Nome:</span>
+                <input type="text" [(ngModel)]="newPatient.name" name="name" required />
+            </label>
+
+            <label>
+                <span>CPF:</span>
+                <input type="text" mask="000.000.000-00" [dropSpecialCharacters]="false" [(ngModel)]="newPatient.cpf"
+                    name="cpf" required />
+            </label>
+
+            <label>
+                <span>Data de nascimento:</span>
+                <input type="date" [(ngModel)]="newPatient.birthDate" name="birthDate" required />
+            </label>
+
+            <button type="submit" class="presence-button" [disabled]="isRegistering">Cadastrar</button>
+
+            <!-- Mensagem de sucesso/erro -->
+            <div *ngIf="registerMessage" class="register-message">
+                {{ registerMessage }}
+            </div>
+        </form>
+    </div>
+</div>
