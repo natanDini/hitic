@@ -1,0 +1,117 @@
+<div class="chat-page">
+    <!-- Container das sidebars -->
+    <div class="sidebars-wrapper">
+        <!-- Operadores -->
+        <!-- Botão + ao lado do título -->
+        <div class="sidebar operators">
+            <div class="header">
+                <h3>Operadores</h3>
+                <button (click)="openCreateOperatorModal()">+</button>
+            </div>
+            <ul>
+                <li *ngFor="let operator of operators" [class.selected]="isOperatorSelected(operator.id)"
+                    (click)="selectOperator(operator)">
+                    {{ operator.name }}
+                </li>
+            </ul>
+        </div>
+
+        <!-- Modal -->
+        <div class="modal-overlay" *ngIf="showCreateOperatorModal">
+            <div class="modal">
+                <h2 *ngIf="!isCreatingOperator">Novo Operador</h2>
+
+                <!-- Formulário -->
+                <form *ngIf="!isCreatingOperator" [formGroup]="createOperatorForm" (ngSubmit)="submitCreateOperator()">
+                    <input placeholder="Nome:" formControlName="name" required />
+                    <textarea placeholder="Descrição:" formControlName="description"></textarea>
+                    <textarea placeholder="Prompt:" formControlName="promptTemplate"></textarea>
+
+                    <!-- Botão + customizado -->
+                    <div class="file-upload">
+                        <button type="button" class="add-file-btn" (click)="fileInput.click()">+</button>
+                        <input #fileInput type="file" multiple (change)="onFileChange($event)" hidden />
+                        <span>Adicionar Arquivos</span>
+                    </div>
+
+                    <!-- Lista de arquivos -->
+                    <ul class="file-list" *ngIf="selectedFiles.length > 0">
+                        <li *ngFor="let file of selectedFiles; let i = index">
+                            {{ file.name }}
+                            <button type="button" (click)="removeFile(i)">✖</button>
+                        </li>
+                    </ul>
+
+                    <!-- Botões -->
+                    <div class="buttons">
+                        <button type="submit" class="modal-btn" [disabled]="isCreatingOperator">
+                            {{ isCreatingOperator ? 'Salvando...' : 'Salvar' }}
+                        </button>
+                        <button type="button" class="modal-btn" (click)="closeCreateOperatorModal()"
+                            [disabled]="isCreatingOperator">
+                            Cancelar
+                        </button>
+                    </div>
+                </form>
+
+                <!-- LOADING -->
+                <div class="loading-overlay" *ngIf="isCreatingOperator">
+                    <div class="typing-indicator"><span>.</span><span>.</span><span>.</span></div>
+                    <p class="loading-text">Criando novo Operador, aguarde!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Conversas -->
+        <div class="sidebar conversations">
+            <div class="conversations-header">
+                <h3>Conversas</h3>
+                <button class="add-button" (click)="startNewConversation()">+</button>
+            </div>
+            <ul>
+                <li *ngFor="let conv of conversations" [class.selected]="isConversationSelected(conv.id)"
+                    (click)="selectConversation(conv)">
+                    <div class="conversation-title">{{ conv.name }}</div>
+                    <div class="conversation-time">{{ conv.createdAt | date: 'HH:mm' }}</div>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Área principal do Chat (fora das sidebars) -->
+    <div class="chat-container">
+        <div class="chat-header">
+            <h2>HealthChat</h2>
+        </div>
+
+        <!-- Chat ativo (mensagens sendo exibidas) -->
+        <div class="chat-messages" *ngIf="chatActive && messages.length > 0">
+            <ng-container *ngFor="let message of messages">
+                <div class="message user">
+                    {{ message.questionMessage }}
+                </div>
+                <div class="message ai">
+                    <markdown [data]="message.answerMessage" [lineNumbers]="false"></markdown>
+                </div>
+                <div *ngIf="isSending && !message.answerMessage" class="typing-indicator">
+                    <span>.</span><span>.</span><span>.</span>
+                </div>
+            </ng-container>
+        </div>
+
+        <!-- Tela de boas-vindas -->
+        <div class="chat-welcome" *ngIf="!chatActive">
+            <img src="../../../assets/Medical_Robot_Logo.png" alt="Logo" />
+            <p>HealthChat — Cuidando da sua saúde, conversa após conversa.</p>
+        </div>
+
+        <div class="chat-input">
+            <input type="text" placeholder="Digite sua mensagem..." [(ngModel)]="prompt" [disabled]="isSending"
+                (keydown.enter)="sendMessage()" />
+
+            <button (click)="sendMessage()" [disabled]="isSending">
+                {{ isSending ? 'Enviando...' : 'Enviar' }}
+            </button>
+        </div>
+    </div>
+</div>

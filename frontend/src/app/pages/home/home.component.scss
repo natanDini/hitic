@@ -1,0 +1,45 @@
+.home-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(to bottom, #011826, #0396A6);
+    margin: 0;
+    padding: 3%;
+}
+
+    .logo {
+        width: 440px;
+    }
+
+    .content-container {
+        color: white;
+        text-align: justify;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-evenly;
+        gap: 50px;
+    }
+
+    .button-container{
+        display: flex;
+        justify-content: space-evenly;
+    }
+
+    .button {
+        border-color: #011826;
+        background-color: #0388A6;
+        width: 20%;
+        height: 30px;
+        color: white;
+        border-radius: 5px;
+        transition: all 0.3s ease;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    
+    .button:hover {
+        background-image: linear-gradient(135deg, #00f0ff, #00ff88);
+        box-shadow: 0 0 15px #00f0ff, 0 0 30px #00ff88;
+        color: #011826;
+    }

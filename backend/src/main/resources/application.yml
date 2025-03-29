@@ -1,0 +1,31 @@
+server:
+  servlet:
+    context-path: /hitic/api
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/hitic
+    username: postgres
+    password: 1234
+    driver-class-name: org.postgresql.Driver
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    open-in-view: false
+
+ocr:
+  api:
+    url: http://ocr_service:5000/ocr/upload
+
+vector:
+  api:
+    url:
+      insert: http://vector_service:5001/insert
+      query: http://vector_service:5001/query
+      delete: http://vector_service:5001/delete
