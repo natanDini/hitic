@@ -29,3 +29,7 @@ vector:
       insert: http://vector_service:5001/insert
       query: http://vector_service:5001/query
       delete: http://vector_service:5001/delete
+
+attendance:
+  api:
+    url: http://localhost:5002/recognize
