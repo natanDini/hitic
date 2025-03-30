@@ -32,4 +32,4 @@ vector:
 
 attendance:
   api:
-    url: http://localhost:5002/recognize
+    url: http://attendance_checker:5002/recognize

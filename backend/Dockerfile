@@ -1,14 +1,24 @@
-# Usar uma imagem base com OpenJDK 21
-FROM openjdk:21-jdk
+# Etapa 1: Build com Maven
+FROM maven:3.9.6-eclipse-temurin-21 AS builder
 
-# Definir o diretório de trabalho dentro do container
 WORKDIR /app
 
-# Copiar o arquivo JAR gerado para dentro do container
-COPY target/hitic-0.0.1-SNAPSHOT.jar app.jar
+# Copia o pom.xml e resolve dependências antecipadamente (cache eficiente)
+COPY pom.xml ./
+RUN mvn dependency:go-offline
 
-# Expor a porta padrão do Spring Boot
+# Copia o restante do código e compila
+COPY src ./src
+RUN mvn clean package -DskipTests
+
+# Etapa 2: Imagem leve apenas com o JAR
+FROM openjdk:21-jdk-slim
+
+WORKDIR /app
+
+# Copia o JAR do build anterior
+COPY --from=builder /app/target/hitic-0.0.1-SNAPSHOT.jar app.jar
+
 EXPOSE 8080
 
-# Comando para rodar a aplicação
 ENTRYPOINT ["java", "-jar", "app.jar"]
